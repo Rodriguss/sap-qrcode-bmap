@@ -6,7 +6,7 @@
 *& Form f_refresh_values
 *&---------------------------------------------------------------------*
 *& Limpa as variáveis globais entre uma chamada e outra (a função pode
-*& ser chamada várias vezes no mesmo processo, ex.: QR PIX + consulta).
+*& ser chamada várias vezes no mesmo processo, ex.: mais de um QR no mesmo formulário).
 *&---------------------------------------------------------------------*
 FORM f_refresh_values.
 

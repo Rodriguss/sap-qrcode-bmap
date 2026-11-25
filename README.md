@@ -1,6 +1,6 @@
 # SAP QR Code BMAP: QR Code em Smartforms sem suporte nativo
 
-Gera um **QR Code como gráfico bitmap (BMAP) na SE78** a partir de qualquer texto (PIX, URL de consulta, chave de acesso etc.), para ser exibido em **Smartforms** ou **SAPscript**.
+Gera um **QR Code como gráfico bitmap (BMAP) na SE78** a partir de qualquer texto (URL, código, identificador etc.), para ser exibido em **Smartforms** ou **SAPscript**.
 
 É uma solução para ambientes SAP antigos que **não têm QR Code nativo** (sem o tipo de código de barras QR na SE73/SMARTSTYLES e sem Adobe Forms).
 
@@ -87,16 +87,16 @@ Há quatro coisas para verificar no ambiente antes de instalar:
 **1. Variável global** (aba *Definições globais*):
 
 ```
-W_PIX  TYPE TDOBNAME
+W_QRCODE  TYPE TDOBNAME
 ```
 
 **2. Nó *Código de programa*** antes do gráfico, chamando a função:
 
 ```abap
-CONCATENATE 'ZQRPIX' is_dados-id_documento
+CONCATENATE 'ZQRCODE' is_dados-id_registro
        INTO lv_bmap_name SEPARATED BY '_'.
 
-lv_conteudo = is_dados-qr_code_pix.
+lv_conteudo = is_dados-qr_conteudo.
 
 CALL FUNCTION 'Z_GERA_QRCODE_BMAP'
   EXPORTING
@@ -111,7 +111,7 @@ CALL FUNCTION 'Z_GERA_QRCODE_BMAP'
     OTHERS            = 5.
 
 IF sy-subrc = 0.
-  w_pix = lv_bmap_name.
+  w_qrcode = lv_bmap_name.
 ENDIF.
 ```
 
@@ -119,7 +119,7 @@ ENDIF.
 
 | Campo | Valor |
 |---|---|
-| Nome | `&W_PIX&` |
+| Nome | `&W_QRCODE&` |
 | Objeto | `GRAPHICS` |
 | ID | `BMAP` |
 | Tipo | Colorido (`BCOL`) |
@@ -131,9 +131,9 @@ O exemplo completo está em [`exemplos/exemplo_smartforms.abap`](exemplos/exempl
 ## Pontos de atenção
 
 - **Sempre trate as exceções** no `CALL FUNCTION`. Sem a cláusula `EXCEPTIONS`, uma falha de rede ou de IGS gera dump na impressão.
-- **Nome único por documento**: use o número do documento no nome do gráfico (ex.: `ZQRPIX_000123`), senão duas impressões simultâneas podem trocar o QR Code entre si.
-- **Acúmulo de gráficos na SE78**: cada documento novo cria um gráfico. Em produção, programe um job de limpeza (por exemplo, apagar `GRAPHICS/BMAP` com prefixo `ZQR*` mais antigos que X dias) ou reutilize nomes fixos quando não houver concorrência.
-- **Dados enviados a terceiros**: o conteúdo do QR Code vai na URL para um serviço externo. Avalie com a área de segurança/LGPD se isso é aceitável para o tipo de dado (um payload PIX inclui nome e chave do recebedor).
+- **Nome único por impressão**: use um identificador do registro no nome do gráfico (ex.: `ZQRCODE_000123`), senão duas impressões simultâneas podem trocar o QR Code entre si.
+- **Acúmulo de gráficos na SE78**: cada nome novo cria um gráfico. Em produção, programe um job de limpeza (por exemplo, apagar `GRAPHICS/BMAP` com prefixo `ZQR*` mais antigos que X dias) ou reutilize nomes fixos quando não houver concorrência.
+- **Dados enviados a terceiros**: o conteúdo do QR Code vai na URL para um serviço externo. Avalie com a área de segurança/LGPD se isso é aceitável para o tipo de dado (dados pessoais ou de pagamento, por exemplo).
 - **Dependência externa**: se a API ficar fora do ar, o QR Code não é gerado. Para quem quiser eliminar a dependência, a alternativa é hospedar um gerador próprio na rede interna e trocar só a URL em `f_download_qrcode`.
 - **Sintaxe clássica**: o código não usa declarações inline nem `abap_bool`, para rodar em releases antigos.
 
@@ -141,7 +141,7 @@ O exemplo completo está em [`exemplos/exemplo_smartforms.abap`](exemplos/exempl
 
 ## Melhorias em relação à versão original
 
-O código partiu de uma implementação em uso num DANFE de NFCom. Nesta versão:
+Esta versão traz:
 
 - **Correção de bug**: `set_image` recebia `blob_size` de uma variável que nunca era preenchida (sempre zero). Agora recebe o tamanho real do PNG.
 - **Codificação de URL dentro da função**: antes, quem chamava tinha que trocar `&` por `%26`. Agora a função codifica `%`, `&`, `#`, `+` e espaço. **Não codifique o conteúdo antes de chamar**, senão ele fica codificado duas vezes.

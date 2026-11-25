@@ -15,7 +15,7 @@ FUNCTION z_gera_qrcode_bmap.
 *& na SE78 (objeto GRAPHICS, ID BMAP, tipo BCOL) com o nome IV_BMAP_NAME.
 *&
 *& Depois de chamada, o Smartform exibe o QR Code em um nó "Gráfico"
-*& apontando para o nome gerado (ex.: &W_PIX&).
+*& apontando para o nome gerado (ex.: &W_QRCODE&).
 *&
 *& Fluxo:
 *&   1. Monta a URL da API pública de QR Code com o conteúdo codificado
